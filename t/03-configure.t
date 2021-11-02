@@ -36,6 +36,7 @@ subtest 'darwin clang/gcc homebrew' => sub {
 };
 
 subtest 'darwin clang/gcc macports' => sub {
+  plan skip_all => "not run on windows" if $^O eq 'MSWin32';
   local $Alien::OpenMP::configure::CCNAME = 'gcc';
   local $Alien::OpenMP::configure::OS     = 'darwin';
   local $ENV{PATH}                        = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin";

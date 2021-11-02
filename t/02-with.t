@@ -1,6 +1,6 @@
 BEGIN {
-    # https://bugs.llvm.org/show_bug.cgi?id=50579
-    $ENV{LIBOMP_USE_HIDDEN_HELPER_TASK} = $ENV{LIBOMP_NUM_HIDDEN_HELPER_THREADS} = 0 if $^O eq 'darwin';
+  # https://bugs.llvm.org/show_bug.cgi?id=50579
+  $ENV{LIBOMP_USE_HIDDEN_HELPER_TASK} = $ENV{LIBOMP_NUM_HIDDEN_HELPER_THREADS} = 0 if $^O eq 'darwin';
 }
 use strict;
 use warnings;
@@ -8,21 +8,21 @@ use Test::More;
 use Alien::OpenMP;
 use File::Temp ();
 use Inline (
-    C           => 'DATA',
-    with        => qw/Alien::OpenMP/,
-    directory   => ( my $tmp = File::Temp::tempdir() ),
-    build_noisy => !!$ENV{HARNESS_IS_VERBOSE}
+  C           => 'DATA',
+  with        => qw/Alien::OpenMP/,
+  directory   => (my $tmp = File::Temp::tempdir()),
+  build_noisy => !!$ENV{HARNESS_IS_VERBOSE}
 );
 
 for my $num_threads (qw/1 2 4 8 16 32 64 128 256/) {
-    is test($num_threads), $num_threads, qq{Ensuring compiled OpenMP program works as expected. Threads = $num_threads};
+  is test($num_threads), $num_threads, qq{Ensuring compiled OpenMP program works as expected. Threads = $num_threads};
 }
 
 {
     local %ENV = %ENV;
     $ENV{CC} = q{gcc};
-    my $config_ref = Alien::OpenMP->Inline;
-    like $config_ref->{CCFLAGS},   qr/-fopenmp/, q{inspecting value of CCFLAGS.};
+    my $config_ref = Alien::OpenMP->Inline('C');
+    like $config_ref->{CCFLAGSEX}, qr/-fopenmp/, q{inspecting value of CCFLAGS.};
     like $config_ref->{LDDLFLAGS},  qr/(?:-lomp|-fopenmp)/, q{inspecting value of LDDLFLAGS.};
     is $config_ref->{AUTO_INCLUDE}, q{#include <omp.h>}, q{inspecting value of AUTO_INCLUDE.};
 }

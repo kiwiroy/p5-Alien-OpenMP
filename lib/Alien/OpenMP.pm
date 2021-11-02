@@ -1,12 +1,18 @@
 package Alien::OpenMP;
 
+use strict;
+use warnings;
 use parent 'Alien::Base';
 use Config ();
-use Alien::OpenMP::configure ();
 
 our $VERSION = '0.003006';
 
 # "public" Alien::Base method implementations
+sub auto_include {
+  join "\n", map {"#include <$_>"} @{shift->inline_auto_include || []};
+}
+
+sub inline_auto_include { shift->runtime_prop->{inline_auto_include}; }
 
 # we can reuse cflags for gcc/gomp; hopefully this will
 # remain the case for all supported compilers
@@ -16,10 +22,12 @@ sub lddlflags { shift->libs }
 
 sub Inline {
   my ($self, $lang) = @_;
+  return unless defined $lang;
+  return if $lang !~ /^(C|CPP)$/;
   return {
-    CCFLAGS       => $self->cflags(),
+    CCFLAGSEX     => $self->cflags(),
     LDDLFLAGS     => join( q{ }, $Config::Config{lddlflags}, $self->lddlflags() ),
-    AUTO_INCLUDE  => $self->runtime_prop->{auto_include},
+    AUTO_INCLUDE  => $self->auto_include,
   };
 }
 
@@ -109,6 +117,10 @@ module do not have access to an unsupported compiler.
 
 =over 3
 
+=item C<auto_include>
+
+Return a string suitable for the C<AUTO_INCLUDE> config of L<Inline::C>
+
 =item C<cflags>
 
 Returns flag used by a supported compiler to enable OpenMP. If not support,
@@ -117,6 +129,12 @@ must compile because OpenMP pragmas are annotations hidden behind source
 code comments.
 
 Example, GCC uses, C<-fopenmp>.
+
+=item C<inline_auto_include>
+
+Override L<Alien::Base/"inline_auto_include"> to use
+L<Alien::Base/runtime_prop> to return a reference to an array of header
+files.
 
 =item C<lddlflags>
 

@@ -62,12 +62,16 @@ jobs:
       - uses: perl-actions/install-with-cpanm@v1
         with:
           args: -n --installdeps .
+      - uses: perl-actions/install-with-cpanm@v1
+        with:
+          install: |
+            Inline::C
       - run: perl -V
       - name: Run tests
         run: |
           perl Makefile.PL
           make
-          prove -brj4 t
+          prove -brvj4 t
   darwin:
     runs-on: macOS-latest
     steps:

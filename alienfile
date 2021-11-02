@@ -23,11 +23,12 @@ plugin 'Probe::CBuilder' => (
   program      => join("\n" => <DATA>),
 );
 
+# only reached on success AFAICT
 after probe => sub {
   # only reached on success AFAICT
   my $build = shift;
   $build->install_prop->{'alien_openmp_compiler_has_openmp'} = 1;
-  $build->runtime_prop->{auto_include}                       = Alien::OpenMP::configure->auto_include;
+  $build->runtime_prop->{inline_auto_include}                = [Alien::OpenMP::configure->auto_include];
 };
 
 share {
